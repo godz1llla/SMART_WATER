@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Water Kyzylorda | Басқару орталығы</title>
     <!-- Modern Sans-serif -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -22,6 +22,7 @@
             --danger: #ef4444;
             --success: #10b981;
             --warning: #f59e0b;
+            --sidebar-width: 280px;
         }
 
         * {
@@ -37,13 +38,13 @@
             color: var(--text-white);
             min-height: 100vh;
             display: flex;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         /* Sidebar */
         .sidebar {
-            width: 280px;
-            background: rgba(15, 23, 42, 0.8);
+            width: var(--sidebar-width);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             padding: 2.5rem 1.5rem;
@@ -51,7 +52,11 @@
             flex-direction: column;
             gap: 2.5rem;
             height: 100vh;
-            z-index: 100;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
         }
 
         .logo {
@@ -125,12 +130,37 @@
         /* Main Content */
         .main {
             flex: 1;
+            margin-left: var(--sidebar-width);
             padding: 2.5rem;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-            position: relative;
+            min-height: 100vh;
+            transition: 0.4s;
+            width: calc(100% - var(--sidebar-width));
         }
 
+        /* Mobile Header */
+        .mobile-top-bar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            padding: 0 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-toggle {
+            font-size: 1.75rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        /* Sub-views */
         .view {
             display: none;
         }
@@ -157,6 +187,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .header h1 {
@@ -180,7 +212,6 @@
             border-radius: 1.5rem;
             cursor: pointer;
             transition: 0.3s;
-            position: relative;
             display: flex;
             flex-direction: column;
             gap: 1rem;
@@ -254,11 +285,6 @@
             cursor: pointer;
             font-weight: 600;
             margin-bottom: 2rem;
-            transition: 0.2s;
-        }
-
-        .back-btn:hover {
-            color: var(--text-white);
         }
 
         .stats-grid {
@@ -291,17 +317,78 @@
             gap: 0.5rem;
         }
 
-        .card-value span {
-            font-size: 1rem;
-            color: var(--text-dim);
+        /* Sections Layouts */
+        .detail-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
         }
 
-        /* Sections */
         .box {
             background: var(--bg-card);
             padding: 1.5rem;
             border-radius: 1.25rem;
             border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .detail-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                left: calc(-1 * var(--sidebar-width));
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main {
+                margin-left: 0;
+                width: 100%;
+                padding: 5rem 1.5rem 2rem 1.5rem;
+            }
+
+            .mobile-top-bar {
+                display: flex;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .hub-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            /* Table Responsiveness */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 500px;
+            }
         }
 
         .btn {
@@ -310,7 +397,6 @@
             border: none;
             cursor: pointer;
             font-weight: 700;
-            transition: 0.2s;
         }
 
         .btn-primary {
@@ -323,7 +409,6 @@
             color: white;
         }
 
-        /* Terminal & Tables */
         .terminal {
             background: #000;
             padding: 1.5rem;
@@ -357,7 +442,14 @@
 
 <body>
 
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <header class="mobile-top-bar">
+        <div class="logo"><i class='bx bx-station'></i> <span>SMART WATER</span></div>
+        <div class="menu-toggle" onclick="toggleSidebar()"><i class='bx bx-menu'></i></div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
         <div class="logo"><i class='bx bx-station'></i> <span>SMART WATER</span></div>
         <div class="lang-switcher">
             <div id="btn-kk" class="lang-btn active" onclick="setLanguage('kk')">KK</div>
@@ -374,18 +466,18 @@
                     class='bx bx-terminal'></i> <span data-i18n="menu_terminal">Терминал</span></div>
         </nav>
         <div
-            style="margin-top: auto; background: rgba(14, 165, 233, 0.1); padding: 1rem; border-radius: 1rem; font-size: 0.8rem; color: var(--text-dim);">
-            <p data-i18n="operator_text">Оператор:</p>
+            style="margin-top: auto; background: rgba(14, 165, 233, 0.1); padding: 1rem; border-radius: 1rem; font-size: 0.8rem;">
+            <p data-i18n="operator_text" style="color:var(--text-dim)">Оператор:</p>
             <p style="color: var(--text-white); font-weight: 800;">Ахметов Б.</p>
         </div>
     </aside>
 
-    <main class="main">
-        <!-- View: Hub (Grid of all nodes) -->
+    <main class="main" id="main-content">
+        <!-- View: Hub -->
         <div id="hub-view" class="view active">
             <header class="header">
                 <div>
-                    <h1 data-i18n="hub_header">Басқару және мониторинг орталығы</h1>
+                    <h1 data-i18n="hub_header">Басқару орталығы</h1>
                     <p style="color: var(--text-dim);"><span data-i18n="nodes_summary">Барлық тораптар</span>: 4 <span
                             data-i18n="nodes_online">желіде</span></p>
                 </div>
@@ -393,7 +485,7 @@
             <div class="hub-grid" id="hub-grid"></div>
         </div>
 
-        <!-- View: Detailed Monitoring -->
+        <!-- View: Detailed -->
         <div id="detail-view" class="view">
             <div class="back-btn" onclick="showHub()"><i class='bx bx-left-arrow-alt'></i> <span
                     data-i18n="btn_back">Тізімге оралу</span></div>
@@ -404,38 +496,35 @@
                             id="status-val" style="color: var(--success); font-weight: 700;"
                             data-i18n="status_active">БЕЛСЕНДІ</span></p>
                 </div>
-                <div class="btn btn-primary" onclick="simulateLeak()" data-i18n="btn_test">Мәжбүрлі тест</div>
+                <div class="btn btn-primary" onclick="simulateLeak()" data-i18n="btn_test">Тест</div>
             </header>
 
             <section class="stats-grid">
                 <div class="card"><span class="card-label" data-i18n="label_flow">ЖАЛПЫ ШЫҒЫС</span>
                     <div class="card-value"><span id="main-flow">0</span> <span data-i18n="unit_m3">м³</span></div>
                 </div>
-                <div class="card"><span class="card-label" data-i18n="label_pressure">ЖЕЛІДЕГІ ҚЫСЫМ</span>
+                <div class="card"><span class="card-label" data-i18n="label_pressure">ҚЫСЫМ</span>
                     <div class="card-value"><span id="main-pressure">0</span> <span>bar</span></div>
                 </div>
-                <div class="card"><span class="card-label" data-i18n="label_temp">ОРТА ТЕМПЕРАТУРАСЫ</span>
+                <div class="card"><span class="card-label" data-i18n="label_temp">ТЕМПЕРАТУРА</span>
                     <div class="card-value">12.5 <span>°C</span></div>
                 </div>
             </section>
 
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+            <div class="detail-row">
                 <div class="box">
-                    <h3 style="margin-bottom: 1.5rem;" data-i18n="chart_title">Соңғы 6 сағаттағы шығыс</h3><canvas
-                        id="liveChart"></canvas>
+                    <h3 style="margin-bottom: 1.5rem;" data-i18n="chart_title">Тұтыну графигі</h3><canvas id="liveChart"
+                        style="max-height: 300px;"></canvas>
                 </div>
                 <div class="box" style="display: flex; flex-direction: column; gap: 1rem;">
                     <h3 data-i18n="sensors_title">Сенсорлар</h3>
-                    <div
-                        style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                        <span data-i18n="sensor_flow">Су ағыны</span> <span style="color: var(--success);">OK</span>
-                    </div>
-                    <div
-                        style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                        <span data-i18n="sensor_mag">Сыртқы магнит</span> <span id="mag-status">NONE</span></div>
-                    <div style="display: flex; justify-content: space-between;"><span data-i18n="sensor_lid">Корпус
-                            қақпағы</span> <span style="color: var(--success);" data-i18n="status_closed">ЖАБЫҚ</span>
-                    </div>
+                    <div style="display: flex; justify-content: space-between;"><span
+                            data-i18n="sensor_flow">Ағын</span> <span style="color: var(--success);">OK</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span
+                            data-i18n="sensor_mag">Магнит</span> <span id="mag-status">NONE</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span
+                            data-i18n="sensor_lid">Қақпақ</span> <span style="color: var(--success);"
+                            data-i18n="status_closed">ЖАБЫҚ</span></div>
                     <button class="btn btn-danger" style="margin-top: auto;" onclick="resetAlarms()"
                         data-i18n="btn_reset">Ысыру</button>
                 </div>
@@ -446,18 +535,14 @@
             <header class="header">
                 <h1 data-i18n="stats_header">Аналитика</h1>
             </header>
-            <div class="box" style="margin-bottom: 1.5rem;">
-                <h3 data-i18n="stats_chart_compare" style="margin-bottom: 1rem;">Тұтыну динамикасы</h3><canvas
-                    id="statsChart" style="max-height: 400px;"></canvas>
-            </div>
+            <div class="box"><canvas id="statsChart" style="max-height: 400px;"></canvas></div>
         </div>
 
         <div id="payments" class="view">
             <header class="header">
                 <h1 data-i18n="payments_header">Төлемдер</h1>
             </header>
-            <div class="box">
-                <h3 data-i18n="payments_history">Тарихы</h3>
+            <div class="box table-container">
                 <table>
                     <thead>
                         <tr>
@@ -486,22 +571,22 @@
             kk: {
                 menu_monitoring: "Мониторинг", menu_stats: "Статистика", menu_payments: "Төлемдер", menu_terminal: "Терминал",
                 hub_header: "Мониторинг орталығы", nodes_summary: "Барлық тораптар", nodes_online: "желіде",
-                status_text: "Ағымдағы күйі", status_active: "БЕЛСЕНДІ", btn_test: "Мәжбүрлі тест", btn_details: "Толығырақ", btn_back: "Тізімге оралу",
+                status_text: "Ағымдағы күйі", status_active: "БЕЛСЕНДІ", btn_test: "Тест", btn_details: "Толығырақ", btn_back: "Оралу",
                 label_flow: "ЖАЛПЫ ШЫҒЫС", label_pressure: "ҚЫСЫМ", label_temp: "ТЕМПЕРАТУРА", unit_m3: "м³",
-                chart_title: "Шығыс графигі", sensors_title: "Сенсорлар", sensor_flow: "Су ағыны", sensor_mag: "Магнит", sensor_lid: "Қақпақ",
+                chart_title: "Тұтыну графигі", sensors_title: "Сенсорлар", sensor_flow: "Ағын", sensor_mag: "Магнит", sensor_lid: "Қақпақ",
                 status_closed: "ЖАБЫҚ", btn_reset: "Ысыру", stats_header: "Аналитика", stats_chart_compare: "Тұтыну динамикасы",
                 payments_header: "Төлемдер", payments_history: "Тарихы", th_date: "Күні", th_period: "Кезең", th_volume: "Көлемі", th_amount: "Сома", th_status: "Күйі", status_paid: "Төленді",
-                terminal_header: "Терминал", operator_text: "Оператор:", msg_detail: "Торап ашылды:", msg_back: "Тізімге оралды", msg_leak: "ДАБЫЛ!", alert_leak: "🚨 Дабыл: "
+                terminal_header: "Терминал", operator_text: "Оператор:", msg_detail: "Ашылды:", msg_back: "Оралды", msg_leak: "ДАБЫЛ!", alert_leak: "🚨 Дабыл: "
             },
             ru: {
                 menu_monitoring: "Мониторинг", menu_stats: "Статистика", menu_payments: "Платежи", menu_terminal: "Терминал",
                 hub_header: "Центр мониторинга", nodes_summary: "Все узлы", nodes_online: "в сети",
-                status_text: "Статус", status_active: "АКТИВЕН", btn_test: "Тест", btn_details: "Детали", btn_back: "Назад к списку",
+                status_text: "Статус", status_active: "АКТИВЕН", btn_test: "Тест", btn_details: "Детали", btn_back: "Назад",
                 label_flow: "РАСХОД", label_pressure: "ДАВЛЕНИЕ", label_temp: "ТЕМПЕРАТУРА", unit_m3: "м³",
                 chart_title: "График расхода", sensors_title: "Датчики", sensor_flow: "Поток", sensor_mag: "Магнит", sensor_lid: "Крышка",
                 status_closed: "ЗАКРЫТО", btn_reset: "Сброс", stats_header: "Аналитика", stats_chart_compare: "Динамика потребления",
                 payments_header: "Платежи", payments_history: "История", th_date: "Дата", th_period: "Период", th_volume: "Объем", th_amount: "Сумма", th_status: "Статус", status_paid: "Оплачено",
-                terminal_header: "Терминал", operator_text: "Оператор:", msg_detail: "Открыт узел:", msg_back: "Возврат к списку", msg_leak: "АВАРИЯ!", alert_leak: "🚨 Тревога: "
+                terminal_header: "Терминал", operator_text: "Оператор:", msg_detail: "Открыт:", msg_back: "Назад", msg_leak: "АВАРИЯ!", alert_leak: "🚨 Тревога: "
             }
         };
 
@@ -514,6 +599,11 @@
 
         let currentLang = 'kk';
         let activeNode = null;
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
 
         function setLanguage(lang) {
             currentLang = lang;
@@ -529,34 +619,31 @@
                 <div class="node-card" onclick="openNode(${node.id})">
                     <div style="display:flex; justify-content:space-between; align-items:center">
                         <span class="status-dot ${node.status === 'ok' ? 'status-ok' : 'status-alert'}"></span>
-                        <span style="font-size:0.7rem; color:var(--text-dim); text-transform:uppercase">${node.status === 'ok' ? 'Online' : 'Alarm'}</span>
+                        <span style="font-size:0.75rem; font-weight:700">${node.status.toUpperCase()}</span>
                     </div>
                     <div class="address">${node.address}</div>
                     <div class="summary">
-                        <span>${translations[currentLang].label_flow}:</span>
                         <span class="value">${node.flow.toFixed(2)} м³</span>
+                        <button class="btn btn-primary" style="padding:0.5rem 1rem">${translations[currentLang].btn_details}</button>
                     </div>
-                    <button class="btn btn-primary" style="width:100%; margin-top:0.5rem">${translations[currentLang].btn_details}</button>
                 </div>
             `).join('');
         }
 
         function openNode(id) {
             activeNode = nodes.find(n => n.id === id);
-            document.getElementById('hub-view').classList.remove('active');
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById('detail-view').classList.add('active');
             document.getElementById('node-title').innerText = activeNode.address;
             document.getElementById('main-flow').innerText = activeNode.flow.toFixed(2);
             document.getElementById('main-pressure').innerText = activeNode.pressure.toFixed(1);
-            addTerminalLine(`${translations[currentLang].msg_detail} ${activeNode.address}`, 'cmd');
+            if (window.innerWidth <= 768) toggleSidebar();
+            addTerminalLine(`${translations[currentLang].msg_detail} ${activeNode.address}`);
             window.scrollTo(0, 0);
         }
 
         function showHub() {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById('hub-view').classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('nav-monitoring').classList.add('active');
+            switchView('hub-view', document.getElementById('nav-monitoring'));
             addTerminalLine(translations[currentLang].msg_back);
         }
 
@@ -565,43 +652,40 @@
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             el.classList.add('active');
-        }
-
-        function simulateLeak() {
-            document.getElementById('detail-view').style.background = 'rgba(239, 68, 68, 0.05)';
-            document.getElementById('mag-status').innerText = 'DETECTED';
-            document.getElementById('mag-status').style.color = 'var(--danger)';
-            addTerminalLine(translations[currentLang].msg_leak, 'danger');
-            alert(translations[currentLang].alert_leak + activeNode.address);
-        }
-
-        function resetAlarms() {
-            document.getElementById('detail-view').style.background = 'none';
-            document.getElementById('mag-status').innerText = 'NONE';
-            document.getElementById('mag-status').style.color = 'var(--text-dim)';
-            addTerminalLine('Reset OK');
+            if (window.innerWidth <= 768 && document.getElementById('sidebar').classList.contains('active')) toggleSidebar();
         }
 
         function addTerminalLine(msg, cls = '') {
             const out = document.getElementById('terminal-out');
             if (!out) return;
             const p = document.createElement('p');
-            p.innerHTML = `<span class="time">[${new Date().toLocaleTimeString()}]</span> <span class="${cls}">${msg}</span>`;
+            p.innerHTML = `<span style="color:#888">[${new Date().toLocaleTimeString()}]</span> <span class="${cls}">${msg}</span>`;
             out.appendChild(p); out.scrollTop = out.scrollHeight;
         }
 
         function renderPayments() {
             const tbody = document.getElementById('payment-rows');
-            const data = [{ d: '12.04.26', p: 'Март', v: '8.4', a: '1250' }, { d: '10.03.26', p: 'Февр', v: '7.9', a: '1180' }];
-            tbody.innerHTML = data.map(r => `<tr><td>${r.d}</td><td>${r.p}</td><td>${r.v}</td><td>${r.a}</td><td><span style="color:var(--success)">OK</span></td></tr>`).join('');
+            const data = [{ d: '12.04.26', p: 'Март', v: '8.4', a: '1250' }];
+            tbody.innerHTML = data.map(r => `<tr><td>${r.d}</td><td>${r.p}</td><td>${r.v}</td><td>${r.a}</td><td>OK</td></tr>`).join('');
+        }
+
+        function simulateLeak() {
+            document.getElementById('detail-view').style.background = 'rgba(239, 68, 68, 0.05)';
+            addTerminalLine(translations[currentLang].msg_leak, 'danger');
+            alert(translations[currentLang].alert_leak + activeNode.address);
+        }
+
+        function resetAlarms() {
+            document.getElementById('detail-view').style.background = 'none';
+            addTerminalLine('Reset OK');
         }
 
         window.onload = () => {
             setLanguage('kk');
             const ctx1 = document.getElementById('liveChart').getContext('2d');
-            new Chart(ctx1, { type: 'line', data: { labels: ['12', '13', '14', '15', '16', '17'], datasets: [{ data: [10, 15, 12, 20, 18, 25], borderColor: '#0ea5e9', fill: true, backgroundColor: 'rgba(14,165,233,0.1)' }] }, options: { plugins: { legend: { display: false } } } });
+            new Chart(ctx1, { type: 'line', data: { labels: ['12', '13', '14', '15', '16', '17'], datasets: [{ data: [10, 15, 12, 20, 18, 25], borderColor: '#0ea5e9', fill: true, backgroundColor: 'rgba(14,165,233,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
             const ctx2 = document.getElementById('statsChart').getContext('2d');
-            new Chart(ctx2, { type: 'bar', data: { labels: ['Янв', 'Фев', 'Мар', 'Апр'], datasets: [{ label: '2026', data: [300, 350, 400, 380], backgroundColor: '#0ea5e9' }] } });
+            new Chart(ctx2, { type: 'bar', data: { labels: ['Янв', 'Фев', 'Мар', 'Апр'], datasets: [{ label: '2026', data: [300, 350, 400, 380], backgroundColor: '#0ea5e9' }] }, options: { responsive: true, maintainAspectRatio: false } });
         };
 
         setInterval(() => {
